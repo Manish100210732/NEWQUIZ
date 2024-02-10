@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Wuiz</title>
+
+    <!-- css file link -->
+    <link rel="stylesheet" href="#">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="form-wrapper sign-in">
+            <div id="quiz-container">
+                <div class="questions">
+                    <h2 id="question"></h2>
+                    <ol type="A">
+                        <li class="option"><span id="option0" onclick="calcScore(this)"></span></li>
+                        <li class="option"><span id="option1" onclick="calcScore(this)"></span></li>
+                        <li class="option"><span id="option2" onclick="calcScore(this)"></span></li>
+                        <li class="option"><span id="option3" onclick="calcScore(this)"></span></li>
+                    </ol>
+                    <h4 id="stat"></h4>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" class="next">Next</button>
+                </div>
+
+            </div>
+
+
+            <div id="scoreboard">
+                <h2 id="score-title">Your Score</h2>
+                <h2 id="score"></h2>
+                <button type="button" id="score-btn" onclick="backToQuiz()">Back to Quiz</button>
+                <button type="button" id="check-answer" onclick="checkAnswer()">Check Answers</button>
+                <button type="button" id="history" onclick="history()">History</button>
+            </div>
+
+
+            <div id="answerBank">
+                <h2>Answers :</h2>
+                <ol type="1" id="answers">
+
+                </ol>
+                <button type="button" id="score-btn" onclick="backToQuiz()">Back to Quiz</button>
+            </div>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+
+
+                body {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    font-family: sans-serif;
+                    background: url(/tre.avif);
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    height: 100vh;
+                }
+
+                .wrapper {
+                    position: relative;
+                    width: 500px;
+                    height: 625px;
+                    background: transparent;
+                    box-shadow: 0 0 50px rgb(148, 238, 4);
+                    border-radius: 20px;
+                    padding: 40px;
+                    overflow: hidden;
+                    margin-top: 20px;
+                }
+
+                .wrapper:hover {
+                    animation: animate 1s linear infinite;
+                }
+
+                @keyframes animate {
+                    100% {
+                        filter: hue-rotate(360deg);
+                    }
+                }
+
+                .form-wrapper {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                    height: 100%;
+                    transition: 1s ease-in-out;
+                }
+
+                .wrapper.active .form-wrapper.sign-in {
+                    transform: translateY(-450px);
+                }
+
+                .wrapper .form-wrapper.sign-up {
+                    position: absolute;
+                    top: 450px;
+                    left: 0;
+                }
+
+                .wrapper.active .form-wrapper.sign-up {
+                    transform: translateY(-450px);
+                }
+
+                h1 {
+                    font-size: 30px;
+                    color: #030303;
+                    text-align: center;
+                    margin: 5px;
+                }
+
+                img {
+                    width: 5.5rem;
+                    height: 5.2rem;
+                    border-radius: 50%;
+                }
+
+                .img {
+                    position: fixed;
+                }
+
+                .quizcontainer {
+                    position: relative;
+                    width: 400px;
+                    height: 500px;
+                    background: transparent;
+                    box-shadow: 0 0 50px rgb(3, 3, 3);
+                    border-radius: 20px;
+                    padding: 40px;
+                    overflow: hidden;
+                }
+
+                #title {
+                    text-align: center;
+                    padding: 0.8rem 5;
+                    font-size: 90px;
+                    color: #000000;
+                    background: transparent;
+                    font-family: Georgia, 'Times New Roman', Times, serif;
+                    margin-bottom: 100px;
+                }
+
+                .question-wrapper .number {
+                    color: #a2aace;
+                    font-size: 25px;
+                    font-weight: 500;
+                    margin-top: 50px;
+                }
+
+                .question-wrapper .number .total {
+                    color: #576081;
+                    font-size: 18px;
+                }
+
+                .question-wrapper .question {
+                    color: #fff;
+                    font-size: 20px;
+                    font-weight: 500;
+                    margin-top: 20px;
+                }
+
+                .answer-wrapper .answer {
+                    width: 100%;
+                    height: 60px;
+                    padding: 20px;
+                    border-radius: 10px;
+                    color: #fff;
+                    border: 3px solid #3f4868;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: 0.3s linear;
+                }
+
+                .answer .checkbox {
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    border: 3px solid #3f4868;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s;
+                }
+
+                .answer .checkbox i {
+                    color: #fff;
+                    font-size: 10px;
+                    opacity: 0;
+                    transition: all 0.3s;
+                }
+
+                .answer:hover:not(.checked) .checkbox,
+                .answer.selected .checkbox {
+                    background-color: #0c80ef;
+                    border-color: #0c80ef;
+                }
+
+                .answer.selected .checkbox i {
+                    opacity: 1;
+                }
+
+                .answer.correct {
+                    border-color: #0cef2a;
+                }
+
+                .answer.wrong {
+                    border-color: #fc3939;
+                }
+
+                .question-wrapper,
+                .answer-wrapper {
+                    margin-bottom: 50px;
+                }
+
+                .option {
+                    margin-bottom: 2rem;
+                    font-size: 1.2rem;
+                    border-bottom: solid 0.1rem rgb(0, 0, 0);
+                    width: 15rem;
+                    background: transparent;
+                    border-radius: 1rem;
+                }
+
+                .option:hover {
+                    color: rgb(0, 0, 0);
+                }
+
+                ol {
+                    position: relative;
+                    padding: 0 1.5rem;
+                    color: rgb(0, 0, 0);
+                    margin-top: 20px;
+                }
+
+                span {
+                    display: block;
+                    padding: 0.1rem 0.7rem;
+                    border-radius: 1rem;
+                }
+
+                #answer {
+                    margin-top: 2.5rem;
+                }
+
+                #stat {
+                    margin-top: 1.5rem;
+                    color: rgb(190, 0, 0);
+                }
+
+                .buttons {
+                    text-align: center;
+                }
+
+                button {
+                    padding: 0.2rem 1.5rem;
+                    border: 1.5px;
+                    outline: 2em;
+                    font-size: 1.5rem;
+                    border-radius: 1.5rem;
+                    color: rgba(243, 236, 236, 0.98);
+                    background: #030101;
+                }
+
+                button:hover {
+                    color: #a00505;
+                }
+
+                button:active {
+                    background: lavender;
+                }
+                .wrapper .button {
+                    width: 100%;
+                    height:45px;
+                    background: white;
+                    border: #0c80ef;
+                    outline: whitesmoke;
+                    border-radius: 40px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.98);
+                    cursor: pointer;
+                    font-size: 16px;
+                    color: #3f4868;
+                }
+
+
+                #scoreboard,
+                #answerBank {
+                    width: 20rem;
+                    background: transparent;
+                    padding: 2rem;
+                    text-align: center;
+                    margin: auto;
+                    position: relative;
+                    top: 5rem;
+                    display: none;
+                }
+
+                #score-title {
+                    margin: 1rem 0;
+                }
+
+                #score-btn,
+                #check-answer, 
+                #history {
+                    margin-top: 1rem;
+                }
+
+                #score {
+                    font-size: 2.5rem;
+                }
+
+                #answerBank li {
+                    text-align: left;
+                    margin-bottom: 0.2rem;
+                    font-size: larger;
+                }
+
+                #answers {
+                    margin-top: 1rem;
+                }
+            </style>
+            <script>
+
+                var questionBank = [
+                    {
+                        question: 'Eritrea, which became the 182nd member of the UN in 1993, is in the continent of',
+                        option: ['Asia', 'Africa', 'Europe', 'Australia'],
+                        answer: 'Africa'
+                    },
+                    {
+                        question: 'Garampani sanctuary is located at',
+                        option: ['Junagarh, Gujarat', 'Diphu, Assam', 'Kohima, Nagaland', 'Gangtok, Sikkim'],
+                        answer: 'Diphu, Assam'
+                    },
+                    {
+                        question: 'For which of the following disciplines is Nobel Prize awarded?',
+                        option: ['Physics and Chemistry', 'Physiology or Medicine', 'Literature, Peace and Economics', 'All of the above'],
+                        answer: 'All of the above'
+                    },
+                    {
+                        question: 'Hitler party which came into power in 1933 is known as',
+                        option: ['Labour Party', 'Nazi Party', 'Ku-Klux-Klan', 'Democratic Party'],
+                        answer: 'Nazi Party'
+                    },
+                    {
+                        question: 'First human heart transplant operation conducted by Dr. Christiaan Barnard on Louis Washkansky, was conducted in',
+                        option: ['1967', '1968', '1958', '1922'],
+                        answer: '1967'
+                    },
+                    {
+                        question: 'Brass gets discoloured in air because of the presence of which of the following gases in air?',
+                        option: ['Oxygen', 'Hydrogen sulphide', 'Carbon dioxide', 'Nitrogen'],
+                        answer: 'Hydrogen sulphide'
+                    },
+                    {
+                        question: 'Which of the following is a non metal that remains liquid at room temperature?',
+                        option: ['Phosphorous', 'Bromine', 'Chlorine', 'Helium'],
+                        answer: 'Bromine'
+                    },
+                    {
+                        question: 'Chlorophyll is a naturally occurring chelate compound in which central metal is',
+                        option: ['calcium', 'iron', 'magnesium', 'copper'],
+                        answer: 'magnesium'
+                    },
+                    {
+                        question: 'Which of the following is used in pencils?',
+                        option: ['Phosphorous', 'Charcoal', 'Silicon', 'Graphite'],
+                        answer: 'Graphite'
+                    },
+                    {
+                        question: 'Radiocarbon is produced in the atmosphere as a result of',
+                        option: ['lightning discharge in atmosphere', 'collision between fast neutrons and nitrogen nuclei present in the atmosphere', 'action of ultraviolet light from the sun on atmospheric oxygen', 'action of solar radiations particularly cosmic rays on carbon dioxide present in the atmosphere'],
+                        answer: 'collision between fast neutrons and nitrogen nuclei present in the atmosphere'
+                    },
+
+
+
+                ]
+
+                var question = document.getElementById('question');
+                var quizContainer = document.getElementById('quiz-container');
+                var scorecard = document.getElementById('scorecard');
+                var option0 = document.getElementById('option0');
+                var option1 = document.getElementById('option1');
+                var option2 = document.getElementById('option2');
+                var option3 = document.getElementById('option3');
+                var next = document.querySelector('.next');
+                var points = document.getElementById('score');
+                var span = document.querySelectorAll('span');
+                var i = 0;
+                var score = 0;
+
+
+                function displayQuestion() {
+                    for (var a = 0; a < span.length; a++) {
+                        span[a].style.background = 'none';
+                    }
+                    question.innerHTML = 'Q.' + (i + 1) + ' ' + questionBank[i].question;
+                    option0.innerHTML = questionBank[i].option[0];
+                    option1.innerHTML = questionBank[i].option[1];
+                    option2.innerHTML = questionBank[i].option[2];
+                    option3.innerHTML = questionBank[i].option[3];
+                    stat.innerHTML = "Question" + ' ' + (i + 1) + ' ' + 'of' + ' ' + questionBank.length;
+                }
+
+
+                function calcScore(e) {
+                    if (e.innerHTML === questionBank[i].answer && score < questionBank.length) {
+                        score = score + 1;
+                        document.getElementById(e.id).style.background = '';
+                    }
+                    else {
+                        document.getElementById(e.id).style.background = 'tomato';
+                    }
+                    setTimeout(nextQuestion, 300);
+                }
+
+
+                function nextQuestion() {
+                    if (i < questionBank.length - 1) {
+                        i = i + 1;
+                        displayQuestion();
+                    }
+                    else {
+                        points.innerHTML = score + '/' + questionBank.length;
+                        quizContainer.style.display = 'none';
+                        scoreboard.style.display = 'block'
+                    }
+                }
+
+
+                next.addEventListener('click', nextQuestion);
+
+
+                function backToQuiz() {
+                    location.reload();
+                }
+
+
+                function checkAnswer() {
+                    var answerBank = document.getElementById('answerBank');
+                    var answers = document.getElementById('answers');
+                    answerBank.style.display = 'block';
+                    scoreboard.style.display = 'none';
+                    for (var a = 0; a < questionBank.length; a++) {
+                        var list = document.createElement('li');
+                        list.innerHTML = questionBank[a].answer;
+                        answers.appendChild(list);
+                    }
+                }
+
+
+                displayQuestion();  
+            </script>
+</body>
+
+</html>
